@@ -56,4 +56,4 @@ Create a report suitable for:
 - Detailed analysis (full findings)
 - Comparison matrix (vs. competitors)
 
-Save to files/reports/ with clear naming (e.g. competitive*analysis*[company]\_[date].txt)
+Save to files/reports/ with clear naming (e.g. competitive_analysis_[company]_[date].txt)
