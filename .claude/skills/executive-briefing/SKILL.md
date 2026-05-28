@@ -74,3 +74,27 @@ Contact: [Who to reach out to for questions]
 - Bury the recommendation
 - Use passive voice
 - Include information that doesn't drive a decision
+
+## Data Presentation
+
+When including data:
+- Round numbers for readability (say "$2.3M" not "$2,347,892")
+- Compare to benchmarks or previous periods
+- Highlight deltas and trends
+- Use comparisons that resonate ("10x faster" not "900% improvement")
+
+## Confidence Indicators
+
+Always indicate confidence level:
+- **HIGH CONFIDENCE**: Multiple reliable sources, verified data
+- **MEDIUM CONFIDENCE**: Good sources but some gaps
+- **LOW CONFIDENCE**: Limited data, emerging information
+
+## Appendix Guidelines
+
+For detailed information, create a separate appendix file with:
+- Full methodology
+- Complete data tables
+- Source documentation
+- Technical details
+- Extended analysis
