@@ -35,3 +35,42 @@ KEY FINDINGS
 * [Finding 1 - with data point if available]
 * [Finding 2 - with data point if available]
 * [Finding 3 - with data point if available]
+
+IMPLICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+What this means for [Company/Team]:
+* [Implication 1]
+* [Implication 2]
+
+RECOMMENDED ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. [Action] - [Owner] - [Timeline]
+2. [Action] - [Owner] - [Timeline]
+3. [Action] - [Owner] - [Timeline]
+
+RISKS & CONSIDERATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+* [Risk/Consideration 1]
+* [Risk/Consideration 2]
+
+═══════════════════════════════════════════════════════════
+Sources: [Brief citation list]
+Contact: [Who to reach out to for questions]
+═══════════════════════════════════════════════════════════
+```
+
+## Style Guidelines
+
+### Do:
+- Use numbers and metrics where possible
+- Keep sentences short and direct
+- Use bullet points liberally
+- Highlight decisions that need to be made
+- Include clear next steps with owners
+
+### Don't:
+- Use jargon or technical terms without explanation
+- Include lengthy background (link to appendix instead)
+- Bury the recommendation
+- Use passive voice
+- Include information that doesn't drive a decision
