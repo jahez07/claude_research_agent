@@ -119,3 +119,80 @@ For checkboxes:
 - Look for small square boxes (□) - these are the actual checkboxes to target. They may be to the left or right of their labels.
 - Distinguish between label text ("Yes", "No") and the clickable checkbox squares.
 - The entry bounding box should cover ONLY the small square, not the text label.
+
+### Step 2: Create fields.json and validation images (REQUIRED)
+- Create a file names `fields.json` with information for the form fields and bounding boxes in this format:
+```
+{
+    "pages": [
+        {
+            "page_number": 1,
+            "image_width": (first page image with in pixels),
+            "image_height": (first page image height in pixels),
+        },
+        {
+            "page_number": 2,
+            "image_width": (second page image with in pixels),
+            "image_height": (second page image height in pixels),
+        }
+        // additional pages
+    ],
+    "form_fields": [
+        // Example for a text field.
+        {
+            "page_number": 1,
+            "description": "the user's last name should be entered here",
+            // Bounding boxes are [left, top, right, bottom]. The bounding boxes for the label and text entry should not overlap.
+            "field_label": "last_name",
+            "label_bounding_box": [30, 125, 95, 142],
+            "entry_bounding_box": [100, 125, 280, 142],
+            "entry_text": {
+                "text": "Johnson", // This text will be added as an annotation at the entry_bounding_box location
+                "font_size": 14, // optional, default to 14
+                "font_color": "000000", // optional, RRGGBB format, defaults to 000000 (black)
+            }
+        },
+        // Example for a checkbox. TARGET THE SQUARE for the entry bounding box, NOT THE TEXT
+        {
+            "page_number": 2,
+            "description": "Checkbox that should be checked if the user is over 18",
+            "entry_bounding_box": [140, 525, 155, 540], // Small box over checkbox square
+            "field_label": "Yes",
+            "label_bounding_box": [100, 525, 132, 540], // Box containing "Yes" text
+            // Use "X" to check the checkbox.
+            "entry_text": {
+                "text": "X",
+            }
+        }
+        // additional form field entries
+    ]
+}
+```
+
+Create validation images by running this script from this file's directory for each page:
+`python scripts/create_validation_image.py <page_number> <path_to_fields.json> <input_image_path> <output_image_path>`
+
+The validation images will have red rectangles where text should be entered, and blue rectangles covering label text.
+
+### Step 3: Validate Bounding Boxes (REQUIRED)
+#### Automated intersection check
+- Verify that none of bounding boxes intersect and that the entry bounding boxes are tall enough by checking the fields.json file with `check_bounding_boxes.py` script (run from this file's directory):
+`python scripts/check_bounding_boxes.py <JSON file>`
+
+If there are errors, reanalyze the relevant fields, adjust the bounding boxes, and iterate until there are no remaining errors. Remember: label (blue) bounding boxes should contain text labels, entry (red) boxes should not.
+
+#### Manual image inspection
+**CRITICAL: Do not proceed without visually inspecting validation images**
+- Red rectangles must ONLY cover input areas
+- Red rectangles MUST NOT contain any text
+- Blue rectangles should contain label text
+- For checkboxes:
+    - Red rectangle MUST be centered on the checkbox square
+    - Blue rectangle should cover the text label for the checkbox
+
+- if any rectangles look wrong, fix fields.json, regenerate the validation images, and verify again. Repeat this process until the bounding boxes are fully accurate.
+
+
+### Step 4: Add annotations to the PDF
+Run this script from the file's directory to create a filled-out PDF using the information in fields.json:
+`python scripts/fill_pdf_form_with_annotations.py <input_pdf_path> <path_to_fields.json> <output_pdf_path>`
