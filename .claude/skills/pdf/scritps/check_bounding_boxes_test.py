@@ -75,3 +75,70 @@ class TestGetBoundingBoxMessages(unittest.TestCase):
         messages = get_bounding_box_messages(stream)
         self.assertTrue(any("FAILURE" in msg and "intersection" in msg for msg in messages))
         self.assertFalse(any("SUCCESS" in msg for msg in messages))
+    
+    def test_different_pages_no_intersection(self):
+        """Test that boxes on different pages don't count as intersecting"""
+        data = {
+            "form_fields": [
+                {
+                    "description": "Name",
+                    "page_number": 1,
+                    "label_bounding_box": [10, 10, 50, 30],
+                    "entry_bounding_box": [60, 10, 150, 30]
+                },
+                {
+                    "description": "Email",
+                    "page_number": 2,
+                    "label_bounding_box": [10, 10, 50, 30],
+                    "entry_bounding_box": [60, 10, 150, 30]
+                }
+            ]
+        }
+
+        stream = self.create_json_stream(data)
+        messages = get_bounding_box_messages(stream)
+        self.assertTrue(any("SUCCESS" in msg for msg in messages))
+        self.assertFalse(any("FAILURE" in msg for msg in messages))
+
+    def test_entry_height_too_small(self):
+        """Test that entry box height is checked against font size"""
+        data = {
+            "form_fields": [
+                {
+                    "description": "Name",
+                    "page_number": 1, 
+                    "label_bounding_box": [10, 10, 20, 50, 30],
+                    "entry_bounding_box": [60, 10, 150, 20],
+                    "entry_text": {
+                        "font_size": 14
+                    }
+                }
+            ]
+        }
+
+        stream = self.create_json_stream(data)
+        messages = get_bounding_box_messages(stream)
+        self.assertTrue(any("FAILURE" in msg for msg in messages))
+        self.assertFalse(any("SUCCESS" in msg for msg in messages))
+
+    def test_default_font_size(self):
+        """Test that default font size is used when not specified"""
+        data = {
+            "form_fields": [
+                {
+                    "description": "Name",
+                    "page_number": 1,
+                    "label_bounding_box": [10, 10, 50, 30],
+                    "entry_text": {
+                        "font_size": 14
+                    }
+                }
+            ]
+        }
+
+        stream = self.create_json_stream(data)
+        messages = get_bounding_box_messages(stream)
+        self.assertTrue(any("SUCCESS" in msg for msg in messages))
+        self.assertFalse(any("FAILURE" in msg for msg in messages))
+
+    
