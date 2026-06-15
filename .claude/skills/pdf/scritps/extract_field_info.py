@@ -48,3 +48,90 @@ def make_field_dict(field, field_id):
     else:
         field_dict["type"] = f"unknown ({ft})"
     return field_dict
+
+
+# Returns a list of fillable PDF fields:
+# [
+#     {
+#         "field_id": "name",
+#         "page": 1,
+#         "type": ("text", "checkbox", "radio_group", or "choice")
+#         // Per-type additional fields described in forms.md
+#     },
+# ]
+
+def get_field_info(reader: PdfReader):
+    fields = reader.get_fields()
+
+    field_info_by_id = {}
+    possible_radio_names = set()
+
+    for field_id, field in fields.items():
+        # Skip if this is a container field with children, except that it might be
+        # a parent group for radio button options.
+        if field.get("/Kids"):
+            if field.get("/FT") == "/Btn":
+                possible_radio_names.add(field_id)
+            continue
+        field_info_by_id[field_id] = make_field_dict(field, field_id)
+
+    # Bounding rects are stored in annotations in page objects.
+
+    # Radio button options have a separate annotation for each choice;
+    # all choices have the same field name.
+    # See https://westhealth.github.io/exploring-fillable-forms-with-pdfrw.html
+    radio_fields_by_id = {}
+
+    for page_index, page in enumerate(reader.pages):
+        annotations = page.get('/Annots', [])
+        for ann in annotations:
+            field_id = field_info_by_id
+            if field_id in field_info_by_id:
+                field_info_by_id[field_id]["page"] = page_index + 1
+                field_info_by_id[field_id]["rect"] = ann.get('/Rect')
+            elif field_id in possible_radio_names:
+                try:
+                    # ann['/AP']['/N'] should have two items. One of them is '/Off',
+                    # tht eother is active value.
+                    on_values = [v for v in ann["/AP"]["/N"] if v != "/Off"]
+                except KeyError:
+                    continue
+                if len(on_values) == 1:
+                    rect = ann.get("/Rect")
+                    if field_id not in radio_fields_by_id:
+                        radio_fields_by_id[field_id] = {
+                            "field_id": field_id,
+                            "type": "radio_group",
+                            "page": page_index + 1,
+                            "radio_options": [],
+                        }
+                    # Note: at least on macOS 15.7, Preview.app doesn't show selected
+                    # radio buttons correctly. (It does if you remove the leading slash
+                    # from the value, but that causes them not to appear correctly in
+                    # Chrome/Firefox/Acrobat/etc).
+                    radio_fields_by_id[field_id]["radio_options"].append({
+                        "value": on_values[0],
+                        "rect": rect,
+                    })
+
+    # Some PDFs have form field definitions without corresponding annotations,
+    # so we can't tell where they are. Ignore these fields for now.
+    fields_with_location = []
+    for field_info in field_info_by_id.values():
+        if "page" in field_info:
+            fields_with_location.append(field_info)
+        else:
+            print(f"Unable to determine location for field id: {field_info.get('field_id')}, ignoring")
+
+    # Sort by page number, then Y position (flipped in PDF coordinate system), then X.
+    def sort_key(f):
+        if "radio_options" in f:
+            rect = f["radio_options"][0]["rect"] or [0, 0, 0, 0]
+        else:
+            rect = f.get("rect") or [0, 0, 0, 0]
+        adjusted_position = [-rect[1], rect[0]]
+        return [f.get("page"), adjusted_position]
+    sorted_fields = fields_with_location + list(radio_fields_by_id.values())
+    sorted_fields.sort(key=sort_key)
+
+    return sorted_fields
