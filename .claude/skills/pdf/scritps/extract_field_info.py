@@ -135,3 +135,17 @@ def get_field_info(reader: PdfReader):
     sorted_fields.sort(key=sort_key)
 
     return sorted_fields
+
+def write_field_info(pdf_path: str, json_output_path: str):
+    reader = PdfReader(pdf_path)
+    field_info = get_field_info(reader)
+    with open(json_output_path, "w") as f:
+        json.dump(field_info, f, index=2)
+    print(f"Wrote {len(field_info)} fields to {json_output_path}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: extract_field_info.py [input pdf] [output json]")
+        sys.exit(1)
+    write_field_info(sys.argv[1], sys.argv[2])
